@@ -30,53 +30,75 @@ import {
   deleteAppointment,
 } from "../../firebase/firebaseService";
 import { getAllDayMessages } from "../allDayLocalization/localization";
+import ErrorSnackbar from "../errorSnackbar/ErrorSnackbar";
+import Loader from "../loader/loader";
 
 export default function Calendar() {
-  const [data, setData] = useState<Appointment[]>([]);
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [locale, setLocale] = useState<Locale>("en-US");
+  const [snackbarOpen, setSnackbarOpen] = useState<boolean>(false);
+  const [snackbarMessage, setSnackbarMessage] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+
+  const showError = (message: string) => {
+    setSnackbarMessage(message);
+    setSnackbarOpen(true);
+  };
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchAppointments = async () => {
+      setLoading(true);
       try {
-        const appointments = await getAppointments();
-        setData(appointments);
+        const fetchedAppointments = await getAppointments();
+        setAppointments(fetchedAppointments);
       } catch (error) {
-        console.error("Error fetching appointments:", error);
+        showError(`Error occured: ${error}`);
+      } finally {
+        setLoading(false);
       }
     };
-    fetchData();
+    fetchAppointments();
   }, []);
 
-  const commitChanges = useCallback(
+  const handleCommitChanges = useCallback(
     async ({ added, changed, deleted }: ChangeSet) => {
-      if (added) {
-        const newAppointment = { ...added } as Omit<Appointment, "id">;
-        const newId = await addAppointment(newAppointment);
-        setData((prevData) => [...prevData, { id: newId, ...newAppointment }]);
-      }
-      if (changed) {
-        await Promise.all(
-          Object.keys(changed).map((id) =>
-            updateAppointment(
-              id,
-              changed[id] as Partial<Omit<Appointment, "id">>
+      try {
+        if (added) {
+          const newAppointment = { ...added } as Omit<Appointment, "id">;
+          const newId = await addAppointment(newAppointment);
+          setAppointments((prevAppointments) => [
+            ...prevAppointments,
+            { id: newId, ...newAppointment },
+          ]);
+        }
+        if (changed) {
+          await Promise.all(
+            Object.keys(changed).map((id) =>
+              updateAppointment(
+                id,
+                changed[id] as Partial<Omit<Appointment, "id">>
+              )
             )
-          )
-        );
-        setData((prevData) =>
-          prevData.map((appointment) =>
-            changed[appointment.id]
-              ? { ...appointment, ...changed[appointment.id] }
-              : appointment
-          )
-        );
-      }
-      if (deleted) {
-        const idToDelete = deleted as string;
-        await deleteAppointment(idToDelete);
-        setData((prevData) =>
-          prevData.filter((appointment) => appointment.id !== idToDelete)
-        );
+          );
+          setAppointments((prevAppointments) =>
+            prevAppointments.map((appointment) =>
+              changed[appointment.id]
+                ? { ...appointment, ...changed[appointment.id] }
+                : appointment
+            )
+          );
+        }
+        if (deleted) {
+          const idToDelete = deleted as string;
+          await deleteAppointment(idToDelete);
+          setAppointments((prevAppointments) =>
+            prevAppointments.filter(
+              (appointment) => appointment.id !== idToDelete
+            )
+          );
+        }
+      } catch (error) {
+        showError(`Error occured: ${error}`);
       }
     },
     []
@@ -84,32 +106,47 @@ export default function Calendar() {
 
   return (
     <Paper>
-      <LocaleSwitcher
-        currentLocale={locale}
-        onLocaleChange={(event) => setLocale(event.target.value as Locale)}
+      {loading ? (
+        <Loader />
+      ) : (
+        <>
+          <LocaleSwitcher
+            currentLocale={locale}
+            onLocaleChange={(event) => setLocale(event.target.value as Locale)}
+          />
+          <Scheduler data={appointments} locale={locale} height={660}>
+            <ViewState
+              defaultCurrentDate="2024-08-11"
+              defaultCurrentViewName="Week"
+            />
+            <EditingState onCommitChanges={handleCommitChanges} />
+            <IntegratedEditing />
+
+            <DayView startDayHour={7} endDayHour={21} />
+            <WeekView startDayHour={7} endDayHour={21} />
+            <MonthView />
+            <Toolbar />
+            <DateNavigator />
+            <TodayButton />
+            <ViewSwitcher />
+
+            <ConfirmationDialog />
+            <Appointments />
+            <AppointmentTooltip
+              showOpenButton
+              showDeleteButton
+              showCloseButton
+            />
+            <AppointmentForm />
+            <AllDayPanel messages={getAllDayMessages(locale)} />
+          </Scheduler>
+        </>
+      )}
+      <ErrorSnackbar
+        open={snackbarOpen}
+        message={snackbarMessage}
+        onClose={() => setSnackbarOpen(false)}
       />
-      <Scheduler data={data} locale={locale} height={660}>
-        <ViewState
-          defaultCurrentDate="2024-08-11"
-          defaultCurrentViewName="Week"
-        />
-        <EditingState onCommitChanges={commitChanges} />
-        <IntegratedEditing />
-
-        <DayView startDayHour={7} endDayHour={21} />
-        <WeekView startDayHour={7} endDayHour={21} />
-        <MonthView />
-        <Toolbar />
-        <DateNavigator />
-        <TodayButton />
-        <ViewSwitcher />
-
-        <ConfirmationDialog />
-        <Appointments />
-        <AppointmentTooltip showOpenButton showDeleteButton showCloseButton />
-        <AppointmentForm />
-        <AllDayPanel messages={getAllDayMessages(locale)} />
-      </Scheduler>
     </Paper>
   );
 }
