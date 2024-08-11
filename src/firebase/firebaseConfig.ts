@@ -4,8 +4,6 @@ import { getFirestore } from "firebase/firestore";
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  // apiKey: "AIzaSyBGic5Up6vQ0N1-u_c6tAkLS2Wb-wdC-so",
-  // authDomain: "calendar-app-56f2f.firebaseapp.com",
   projectId: "calendar-app-56f2f",
   storageBucket: "calendar-app-56f2f.appspot.com",
   messagingSenderId: "481174563309",
