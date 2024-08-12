@@ -1,37 +1,42 @@
-import { useEffect, useState, useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
+
 import Paper from "@mui/material/Paper";
 import {
-  ViewState,
   EditingState,
-  IntegratedEditing,
   ChangeSet,
+  IntegratedEditing,
+  ViewState,
 } from "@devexpress/dx-react-scheduler";
+
 import {
-  Scheduler,
-  DayView,
+  AllDayPanel,
   Appointments,
   AppointmentForm,
   AppointmentTooltip,
   ConfirmationDialog,
-  MonthView,
-  WeekView,
-  Toolbar,
   DateNavigator,
+  DayView,
+  MonthView,
+  Scheduler,
+  Toolbar,
   TodayButton,
   ViewSwitcher,
-  AllDayPanel,
+  WeekView,
 } from "@devexpress/dx-react-scheduler-material-ui";
-import { Appointment } from "../../types/CalendarTypes";
-import { LocaleSwitcher } from "../localeSwitcher/LocaleSwitcher";
+
 import {
-  getAppointments,
   addAppointment,
-  updateAppointment,
   deleteAppointment,
+  getAppointments,
+  updateAppointment,
 } from "../../firebase/firebaseService";
+
+import { LocaleSwitcher } from "../localeSwitcher/LocaleSwitcher";
 import { getAllDayMessages } from "../allDayLocalization/localization";
 import ErrorSnackbar from "../errorSnackbar/ErrorSnackbar";
-import Loader from "../loader/loader";
+import Loader from "../loader/Loader";
+
+import { Appointment } from "../../types/CalendarTypes";
 
 export default function Calendar() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);

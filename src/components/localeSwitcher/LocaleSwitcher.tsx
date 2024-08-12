@@ -1,5 +1,6 @@
-import TextField from "@mui/material/TextField";
 import MenuItem from "@mui/material/MenuItem";
+import TextField from "@mui/material/TextField";
+
 import { LocaleSwitcherProps } from "../../types/LocaleSwitcher";
 
 export const LocaleSwitcher = ({
@@ -8,13 +9,13 @@ export const LocaleSwitcher = ({
 }: LocaleSwitcherProps) => (
   <div
     style={{
-      display: "flex",
-      justifyContent: "flex-end",
       alignItems: "center",
       borderBottom: "1px solid #c8c8c8",
+      display: "flex",
+      justifyContent: "flex-end",
     }}
   >
-    <div style={{ marginRight: "1rem", fontSize: "1.25rem" }}>
+    <div style={{ fontSize: "1.25rem", marginRight: "1rem" }}>
       Language/Język:
     </div>
     <TextField

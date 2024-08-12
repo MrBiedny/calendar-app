@@ -1,18 +1,20 @@
-import { db } from "./firebaseConfig";
 import {
-  collection,
-  getDocs,
   addDoc,
-  updateDoc,
+  collection,
   deleteDoc,
   doc,
+  getDocs,
   Timestamp,
+  updateDoc,
 } from "firebase/firestore";
+
+import { db } from "./firebaseConfig";
+
 import { Appointment } from "../types/CalendarTypes";
 
 export const getAppointments = async (): Promise<Appointment[]> => {
-  const appointmentsCollection = collection(db, "appointments");
-  const appointmentSnapshot = await getDocs(appointmentsCollection);
+  const appointmentsData = collection(db, "appointments");
+  const appointmentSnapshot = await getDocs(appointmentsData);
   const appointmentList = appointmentSnapshot.docs.map((doc) => {
     const data = doc.data();
     const appointment: Appointment = {
@@ -32,8 +34,8 @@ export const getAppointments = async (): Promise<Appointment[]> => {
 export const addAppointment = async (
   appointment: Omit<Appointment, "id">
 ): Promise<string> => {
-  const appointmentsCollection = collection(db, "appointments");
-  const docRef = await addDoc(appointmentsCollection, appointment);
+  const appointmentsData = collection(db, "appointments");
+  const docRef = await addDoc(appointmentsData, appointment);
   return docRef.id;
 };
 

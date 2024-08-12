@@ -10,6 +10,6 @@ type Appointment = {
 
 export interface ChangeSet {
   added?: Partial<Appointment>;
-  changed?: { [id: string]: Partial<Appointment> };
+  changed?: Record<string, Partial<Appointment>>;
   deleted?: string;
 }
